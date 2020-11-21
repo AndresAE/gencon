@@ -37,6 +37,12 @@ def ned_to_body(phi, theta, psi):
     return b
 
 
+def parallel_axis_theorem(inertia, m, r):
+    """Inertia transformation using parallel axis theorem."""
+    inertia_prime = inertia + m * r ** 2
+    return inertia_prime
+
+
 def translate_mrc(mrc, mrc_new, cfm):
     """translate forces and moments to new moment reference center."""
     r = array([mrc[0], mrc[1], mrc[2]]) - array([mrc_new[0], mrc_new[1], mrc_new[2]])

@@ -1,4 +1,4 @@
-"""1976 standard atmosphere model."""
+"""1976 standard atmosphere model of earth."""
 from numpy import exp, sqrt
 gas_constant = 1716.5  # ft*lb/(slug*R)
 gamma = 1.4  # []
@@ -49,3 +49,27 @@ def temperature(altitude):
         t = -70  # deg F
     t = t + 459.7  # R
     return t
+
+
+def von_karman_p():
+    return 1
+
+
+def von_karman_q():
+    return 1
+
+
+def von_karman_r():
+    return 1
+
+
+def von_karman_u():
+    return 1
+
+
+def von_karman_v():
+    return 1
+
+
+def von_karman_w():
+    return 1
