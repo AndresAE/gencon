@@ -1,3 +1,3 @@
 from .Atmoshpere import Atmosphere
-from .Gravity import Earth
+from .Gravity import Gravity
 from . import rotations
