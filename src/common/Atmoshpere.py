@@ -1,5 +1,7 @@
 """1976 standard atmosphere model of earth."""
-from numpy import exp, sqrt
+from control import series
+from scipy.signal import TransferFunction
+from numpy import array, exp, pi, polymul, sqrt
 gas_constant = 1716.5  # ft*lb/(slug*R)
 gamma = 1.4  # []
 
@@ -51,25 +53,84 @@ def temperature(altitude):
     return t
 
 
-def von_karman_p():
-    return 1
+def von_karman_disturbance(v, alt, b):
+    w_20 = 15
+    sigma_u = von_karman_sigma_u(alt, w_20)
+    sigma_v = von_karman_sigma_v(alt, w_20)
+    sigma_w = von_karman_sigma_w(w_20)
+    l_u = von_karman_l_u(alt)
+    l_v = von_karman_l_v(alt)
+    l_w = von_karman_l_w(alt)
+    h_u = von_karman_u(v, sigma_u, l_u)
+    h_v = von_karman_v(v, sigma_v, l_v)
+    h_w = von_karman_w(v, sigma_w, l_w)
+    h_p = von_karman_p(v, b, sigma_w, l_w)
+    h_q = von_karman_q(v, b, h_w)
+    h_r = von_karman_r(v, b, h_v)
+
+    return h_u, h_v, h_w, h_p, h_q, h_r
 
 
-def von_karman_q():
-    return 1
+def von_karman_p(v, b, sigma_w, l_w):
+    h_p = TransferFunction([sigma_w*sqrt(0.8/v)*((pi/(4*b))**(1/6))], ((2*l_w)**(1/3))*array([4*b/(pi*v), 1]))
+    return h_p
 
 
-def von_karman_r():
-    return 1
+def von_karman_q(v, b, h_w):
+    h_q = TransferFunction(polymul(array([1/v, 0]), h_w.num), polymul(array([4*b/(pi*v), 1]), h_w.den))
+    return h_q
 
 
-def von_karman_u():
-    return 1
+def von_karman_r(v, b, h_v):
+    h_r = TransferFunction(polymul([1/v, 0], h_v.num), polymul([3*b/(pi*v), 1], h_v.den))
+    return h_r
 
 
-def von_karman_v():
-    return 1
+def von_karman_u(v, sigma_u, l_u):
+    h_u = TransferFunction(sigma_u*sqrt(2*l_u/(pi*v))*array([0.25*l_u/v, 1]), [0.1987*(l_u/v)**2, 1.357*l_u/v, 1])
+    return h_u
 
 
-def von_karman_w():
-    return 1
+def von_karman_v(v, sigma_v, l_v):
+    h_v = TransferFunction(sigma_v*sqrt(2*l_v/(pi*v))*array([0.3398*(2*l_v/v)**2, 2.7478*(2*l_v/v), 1]),
+                           [0.1539*(2*l_v/v)**3, 1.9754*(2*l_v/v)**2, 2.9958*(2*l_v/v), 1])
+    return h_v
+
+
+def von_karman_w(v, sigma_w, l_w):
+    h_w = TransferFunction(sigma_w * sqrt(2 * l_w / (pi * v)) *
+                           array([0.3398 * (2 * l_w / v) ** 2, 2.7478 * (2 * l_w / v), 1]),
+                           [0.1539 * (2 * l_w / v) ** 3, 1.9754 * (2 * l_w / v) ** 2, 2.9958 * (2 * l_w / v), 1])
+    return h_w
+
+
+def von_karman_sigma_u(h, w_20):
+    sigma_w = von_karman_sigma_w(w_20)
+    sigma_u = sigma_w / (0.177 + 0.000823 * h) ** 0.4
+    return sigma_u
+
+
+def von_karman_sigma_v(h, w_20):
+    sigma_w = von_karman_sigma_w(w_20)
+    sigma_v = sigma_w / (0.177 + 0.000823 * h) ** 0.4
+    return sigma_v
+
+
+def von_karman_sigma_w(w_20):
+    sigma_w = 0.1 * w_20
+    return sigma_w
+
+
+def von_karman_l_u(h):
+    l_u = h / (0.177 + 0.000823 * h) ** 1.2
+    return l_u
+
+
+def von_karman_l_v(h):
+    l_v = h / (2 * (0.177 + 0.000823 * h) ** 1.2)
+    return l_v
+
+
+def von_karman_l_w(h):
+    l_w = h / 2
+    return l_w
