@@ -1,2 +1,2 @@
 # gencon
-General controls and dynamics analysis software.
+Generic controls system and dynamics analysis software.
