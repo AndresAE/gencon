@@ -84,7 +84,8 @@ def model(x, u, w):
 def control_law(x, y, u, w, on=True):
     """f104 control law."""
     if on:
-        u[0] = u[0] - 5 * x[6]
+        u[0] = u[0] - 0.5 * x[6]
+        u[2] = u[2] + 0.5 * x[8]
         n_z = 1 / cos(x[3])
-        u[1] = u[1] - 0 * x[7] + 0.2 * (n_z - y[1])
+        u[1] = u[1] + 0.5 * x[7] - 0 * (n_z - y[1])
     return u
