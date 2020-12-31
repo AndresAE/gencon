@@ -1,9 +1,10 @@
 """Lockheed F104 model."""
-from numpy import arctan, array, cos, sqrt
+from numpy import array, cos, deg2rad
 from src.common.Atmoshpere import Atmosphere
 from src.common.equations_of_motion import nonlinear_eom
 from src.common.Gravity import Gravity
 from src.common.rotations import body_to_wind, ned_to_body
+from src.common.tools import angle_of_attack, angle_of_sideslip, dynamic_pressure, speed
 
 
 def model(x, u, w):
@@ -45,11 +46,11 @@ def model(x, u, w):
 
     g = Gravity(x[-1]).gravity()
     atm = Atmosphere(x[-1])
-    v = sqrt(x[0] ** 2 + x[1] ** 2 + x[2] ** 2) # functionalize
-    q = 0.5 * atm.air_density() * v ** 2 # functionalize
+    v = speed(x)
+    q = dynamic_pressure(atm.air_density(), x)
 
-    alpha = arctan(x[2] / x[0]) # find exact rotation angles
-    beta = arctan(x[1] / x[0])
+    alpha = deg2rad(angle_of_attack(x))
+    beta = deg2rad(angle_of_sideslip(x))
 
     # disturbances #####################################################################################################
     fm_w = array([0, 0, 0, 0, 0, 0])
