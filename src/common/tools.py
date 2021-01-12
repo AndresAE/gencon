@@ -1,4 +1,4 @@
-from control import tf
+from control import tf, pade
 from numpy import arctan, random, rad2deg, sqrt
 
 
@@ -24,8 +24,9 @@ def lead_lag(t_lead, t_lag):
     return comp
 
 
-def pade_1(tau):
-    approx = tf([-tau/2, 1], [tau/2, 1])
+def pade_model(tau, n=1):
+    approx = pade(tau, n)
+    approx = tf(approx[0], approx[1])
     return approx
 
 

@@ -1,10 +1,11 @@
 """Lockheed F104 model."""
+from control import forced_response
 from numpy import array, cos, deg2rad
-from src.common.Atmoshpere import Atmosphere
+from src.common.Atmoshpere import Atmosphere, von_karman_disturbance
 from src.common.equations_of_motion import nonlinear_eom
 from src.common.Gravity import Gravity
 from src.common.rotations import body_to_wind, ned_to_body
-from src.common.tools import angle_of_attack, angle_of_sideslip, dynamic_pressure, speed
+from src.common.tools import angle_of_attack, angle_of_sideslip, dynamic_pressure, unit_noise, speed
 
 
 def model(x, u, w):
@@ -84,9 +85,15 @@ def model(x, u, w):
 
 def control_law(x, y, u, w, on=True):
     """f104 control law."""
+    k_p_da = -0.5
+    k_psi_da = 0.0
+
+    k_q_de = 0.5
+    k_nz_de = 0  # 0
+    k_alt_de = 0.001  #
     if on:
-        u[0] = u[0] - 0.5 * x[6]
+        u[0] = u[0] + k_p_da * x[6] + k_psi_da * (x[5] - deg2rad(3))
         u[2] = u[2] + 0.5 * x[8]
         n_z = 1 / cos(x[3])
-        u[1] = u[1] + 0.5 * x[7] - 0 * (n_z - y[1])
+        u[1] = u[1] + k_q_de * x[7] + k_nz_de * (y[1] - n_z) + k_alt_de * (x[-1] - 500)
     return u
