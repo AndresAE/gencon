@@ -1,7 +1,7 @@
 from control import bode, feedback, nichols, step_response, tf, tf2ss
 from matplotlib import pyplot as plt
-from src.common.Atmoshpere import von_karman_disturbance
-from src.common.Pilot import Pilot
+from common.Atmoshpere import von_karman_disturbance
+from common.Pilot import Pilot
 
 gain = 1
 lead = 0

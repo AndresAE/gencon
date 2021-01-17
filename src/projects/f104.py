@@ -1,11 +1,11 @@
 """Lockheed F104 model."""
 from control import forced_response
 from numpy import array, cos, deg2rad
-from src.common.Atmoshpere import Atmosphere, von_karman_disturbance
-from src.common.equations_of_motion import nonlinear_eom
-from src.common.Gravity import Gravity
-from src.common.rotations import body_to_wind, ned_to_body
-from src.common.tools import angle_of_attack, angle_of_sideslip, dynamic_pressure, unit_noise, speed
+from common.Atmoshpere import Atmosphere, von_karman_disturbance
+from common.equations_of_motion import nonlinear_eom
+from common.Gravity import Gravity
+from common.rotations import body_to_wind, ned_to_body
+from common.tools import angle_of_attack, angle_of_sideslip, dynamic_pressure, unit_noise, speed
 
 
 def model(x, u, w):
