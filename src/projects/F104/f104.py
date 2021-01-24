@@ -1,14 +1,15 @@
 """Lockheed F104 model."""
-from control import forced_response
 from numpy import array, cos, deg2rad
-from common.Atmoshpere import Atmosphere, von_karman_disturbance
-from common.equations_of_motion import nonlinear_eom
+from common.Atmoshpere import Atmosphere
+from common.equations_of_motion import nonlinear_eom, local_acceleration
 from common.Gravity import Gravity
 from common.rotations import body_to_wind, ned_to_body
-from common.tools import angle_of_attack, angle_of_sideslip, dynamic_pressure, unit_noise, speed
+from common.tools import angle_of_attack, angle_of_sideslip, dynamic_pressure, speed
+pilot_station = array([6, 0, 2])
+cg = array([25, 0, 2])
 
 
-def model(x, u, w):
+def model(x, u):
     """nonlinear f104 flight model."""
     m = 13600 / 32.174
     j = array([[3600, 0, 0], [0, 59000, 0], [0, 0, 60000]])
@@ -75,25 +76,37 @@ def model(x, u, w):
     # state derivative #################################################################################################
     x_dot = nonlinear_eom(x, m, j, fm)
 
-    # outputs ##########################################################################################################
-    n_z = 1 - x_dot[2] / g
-    gamma = x[4] - alpha
-    y = array([gamma, n_z])
-
-    return x_dot, y
+    return x_dot
 
 
 def control_law(x, y, u, w, on=True):
     """f104 control law."""
-    k_p_da = -0.5
+    k_p_da = 0  # -0.5
     k_psi_da = 0.0
 
-    k_q_de = 0.5
+    k_q_de = 0  # 0.5
     k_nz_de = 0  # 0
-    k_alt_de = 0.001  #
+    k_alt_de = 0  # 0.001
+
+    k_r_dr = 0  # 05
     if on:
         u[0] = u[0] + k_p_da * x[6] + k_psi_da * (x[5] - deg2rad(3))
-        u[2] = u[2] + 0.5 * x[8]
+        u[2] = u[2] + k_r_dr * x[8]
         n_z = 1 / cos(x[3])
         u[1] = u[1] + k_q_de * x[7] + k_nz_de * (y[1] - n_z) + k_alt_de * (x[-1] - 500)
     return u
+
+
+def outputs(x_dot, x, u):
+    g = Gravity(x[-1]).gravity()
+    alpha = deg2rad(angle_of_attack(x))
+    n_x = x_dot[0] / g
+    n_y = x_dot[1] / g
+    n_z = 1 - x_dot[2] / g
+    a_p = local_acceleration(pilot_station, cg, x, x_dot)
+    n_z_p = 1 - a_p[2] / g
+    n_x_p = a_p[0] / g
+    n_y_p = a_p[1] / g
+    gamma = x[4] - alpha
+    y = array([gamma, n_z, n_x, n_y, n_x_p, n_y_p, n_z_p])
+    return y
