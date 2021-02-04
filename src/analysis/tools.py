@@ -5,12 +5,11 @@ from matplotlib import pyplot as plt
 from numpy import append, identity, size, shape, reshape, transpose, zeros
 
 
-def nonlinear_eom_to_ss(model, outputs, x_0, u_0, y_0, dx=0.01, du=0.01):
+def nonlinear_eom_to_ss(model, outputs, x_0, u_0, y_0, dx=0.1, du=0.1):
     """aircraft system linearization routine."""
     """return jacobians a, b wrt to x_ss and output matrices c, and d wrt u_ss."""
     x = x_0
     u = u_0
-    dxdt_0 = model(x_0, u_0)
     a = zeros((len(x_0), len(x_0)))
     b = zeros((len(x_0), len(u_0)))
     c = zeros((len(y_0), len(x_0)))
@@ -18,42 +17,50 @@ def nonlinear_eom_to_ss(model, outputs, x_0, u_0, y_0, dx=0.01, du=0.01):
     for ii in range(0, len(x_0)):
         x[ii] = x[ii] + dx
         dxdt_1 = model(x, u_0)
+        x[ii] = x[ii] - dx
 
         x[ii] = x[ii] - dx
         dxdt_2 = model(x, u_0)
         ddx_dx = (dxdt_1 - dxdt_2)/(2*dx)
         a[:, ii] = transpose(ddx_dx)
-        x = x_0
+        x[ii] = x[ii] + dx
 
     for ii in range(0, len(u_0)):
         u[ii] = u[ii] + du
         dxdt_1 = model(x_0, u)
+        u[ii] = u[ii] - du
 
         u[ii] = u[ii] - du
         dxdt_2 = model(x_0, u)
         ddx_dx = (dxdt_1 - dxdt_2)/(2*du)
         b[:, ii] = transpose(ddx_dx)
-        u = u_0
+        u[ii] = u[ii] + du
 
     for ii in range(0, len(x_0)):
         x[ii] = x[ii] + dx
-        dydt_1 = outputs(dxdt_0, x, u_0)
+        dxdt_1 = model(x, u_0)
+        dydt_1 = outputs(dxdt_1, x, u_0)
+        x[ii] = x[ii] - dx
 
         x[ii] = x[ii] - dx
-        dydt_2 = outputs(dxdt_0, x, u_0)
+        dxdt_2 = model(x, u_0)
+        dydt_2 = outputs(dxdt_2, x, u_0)
         ddy_dx = (dydt_1 - dydt_2)/(2*dx)
         c[:, ii] = transpose(ddy_dx)
-        x = x_0
+        x[ii] = x[ii] + dx
 
     for ii in range(0, len(u_0)):
         u[ii] = u[ii] + du
-        dydt_1 = outputs(dxdt_0, x_0, u)
+        dxdt_1 = model(x, u_0)
+        dydt_1 = outputs(dxdt_1, x_0, u)
+        u[ii] = u[ii] - du
 
         u[ii] = u[ii] - du
-        dydt_2 = outputs(dxdt_0, x_0, u)
+        dxdt_2 = model(x, u_0)
+        dydt_2 = outputs(dxdt_2, x_0, u)
         ddy_dx = (dydt_1 - dydt_2)/(2*du)
         d[:, ii] = transpose(ddy_dx)
-        u = u_0
+        u[ii] = u[ii] + du
 
     a_i = identity(len(x_0))
     b_i = zeros((len(x_0), len(u_0)))
@@ -67,13 +74,21 @@ def ss_selector(a, b, c, d, x, u, y):
     a_out = a_out[:, x]
     b_out = b[x, :]
     b_out = b_out[:, u]
-    s = shape(a)
-    c_out = c[append(x, s[0] + y), :]
-    c_out = c_out[:, x]
-    d_out = d[append(x, s[0] + y), :]
-    d_out = d_out[:, u]
-    b_out = reshape(b_out, (size(x), size(u)))
-    d_out = reshape(d_out, (size(x) + size(y), size(u)))
+    s = shape(a_out)
+    if not y:
+        c_out = c[x, :]
+        c_out = c_out[:, x]
+        d_out = d[x, :]
+        d_out = d_out[:, u]
+        b_out = reshape(b_out, (size(x), size(u)))
+        d_out = reshape(d_out, (size(x), size(u)))
+    else:
+        c_out = c[append(x, s[0] + y), :]
+        c_out = c_out[:, x]
+        d_out = d[append(x, s[0] + y), :]
+        d_out = d_out[:, u]
+        b_out = reshape(b_out, (size(x), size(u)))
+        d_out = reshape(d_out, (size(x) + size(y), size(u)))
     return a_out, b_out, c_out, d_out
 
 
