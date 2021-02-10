@@ -92,7 +92,8 @@ def feedback_control_law(x, y, u, w, on=True):
     k_psi_da = 0.0
 
     k_q_de = -0.2
-    k_nz_de = 0  # 0
+    k_q_de = 0
+    k_nz_de = 0.01  # 0
     k_alt_de = 0  # 0.001
 
     k_r_dr = 0.5
@@ -117,7 +118,7 @@ def outputs(x_dot, x, u):
     n_y = x_dot[1] / g
     n_z = 1 + x_dot[2] / g
     a_p = local_acceleration(pilot_station, cg, x, x_dot)
-    n_z_p = 1 - a_p[2] / g
+    n_z_p = 1 + a_p[2] / g
     n_x_p = a_p[0] / g
     n_y_p = a_p[1] / g
     gamma = x[4] - alpha
