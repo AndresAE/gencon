@@ -1,7 +1,7 @@
-from control import rlocus
+from control import tf
 from matplotlib import pyplot as plt
-from numpy import abs, arctan, arctan2, array, count_nonzero, cos, delete, imag, linspace, log10, meshgrid, polymul, \
-    polyval, rad2deg, real, sqrt
+from numpy import abs, arccos, arctan2, array, count_nonzero, cos, delete, imag, linspace, log10, meshgrid, polymul, \
+    polyval, rad2deg, real, roots, sqrt, tan
 from scipy.signal import tf2zpk
 
 
@@ -94,17 +94,13 @@ def nichols(sys, title=''):
 
 
 def root_locus_alt(sys):
-    wn_vec = linspace(0, 100, 101)
-    zeta_vec = array([0.2, 0.4, 0.6, 0.8])
-    x = linspace(-5, 1, 200)
-    y = linspace(-5, 5, 100)
-    rlocus(sys)
-    xx, yy = meshgrid(x, y)
-    z_wn = sqrt(xx**2 + yy**2)
-    z_zeta = cos(arctan(yy/xx))
-    cs = plt.contour(xx, yy, z_wn, wn_vec, colors='k', linewidths=0.5)
-    cs = plt.contour(xx, yy, z_zeta, zeta_vec, colors='r', linewidths=0.5)
-    plt.xlim(-5, 1)
-    plt.ylim(-5, 5)
+    tfs = tf(sys)
+    r = roots(tfs.den[0][0])
+    plt.plot(real(r), imag(r), marker="x", linestyle="None")
+    plt.plot([-100, 100], [0, 0], linestyle='--', color='k')
+    plt.plot([0, 0], [-100, 100], linestyle='--', color='k')
+    plt.plot([0, -100], [0, -100*tan(arccos(0.4))], color='r')
+    plt.plot([0, -100], [0, 100 * tan(arccos(0.4))], color='r')
+    plt.grid()
     plt.show()
 

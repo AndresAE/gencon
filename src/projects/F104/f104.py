@@ -88,15 +88,14 @@ def feedforward_control_law(u, on=True):
 
 def feedback_control_law(x, y, u, w, on=True):
     """f104 control law."""
-    k_p_da = -0.5
-    k_psi_da = 0.0
+    k_p_da = 0
+    k_psi_da = 0
 
-    k_q_de = -0.2
     k_q_de = 0
-    k_nz_de = 0.01  # 0
+    k_nz_de = 0  # 0
     k_alt_de = 0  # 0.001
 
-    k_r_dr = 0.5
+    k_r_dr = 0
     if on:
         u[0] = u[0] + k_p_da * x[6] + k_psi_da * (x[5] - deg2rad(3))
         u[2] = u[2] + k_r_dr * x[8]
